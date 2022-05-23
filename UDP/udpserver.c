@@ -45,6 +45,7 @@ int package_arive = 0;
 int timeout = 0;
 clock_t timer;
 int timeouts = 10;
+FILE *fptr;
 
 
 int main(int argc, char *argv[])
@@ -166,6 +167,14 @@ void execution(int internet_socket)
 			timer = clock();
 		}
 		package_arive++;
+		fptr = fopen("Data.csv", "a");
+    if (fptr == NULL)
+    {
+        printf("Cannot open file \n");
+        exit(0);
+    }
+	//fwrite(buffer,number_of_bytes_received,1,fptr);
+	fprintf(fptr,"%s\n",buffer);
 	}
 }
 

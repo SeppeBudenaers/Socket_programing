@@ -111,25 +111,46 @@ int main(void)
                         perror("accept");
                     } else {
                         add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
-
-                        printf("pollserver: new connection from %s on "
+                        char clientinfo [100];
+                        sprintf(clientinfo,"pollserver: new connection from %s on "
                             "socket %d\n",
                             inet_ntop(remoteaddr.ss_family,
                                 get_in_addr((struct sockaddr*)&remoteaddr),
                                 remoteIP, INET6_ADDRSTRLEN),
                             newfd);
+                        for(int j = 0; j < fd_count; j++) {
+                            if (j == 0)
+                            {   
+                               
+                            }
+
+                            // Send to everyone!
+                            int dest_fd = pfds[j].fd;
+
+                            // Except the listener and ourselves
+                            if (dest_fd != listener && dest_fd != newfd) {
+                                
+                                if (send(dest_fd, clientinfo, sizeof(clientinfo), 0) == -1) 
+                                {   
+                                    printf("TEST, %s\n",buf);
+                                    perror("send");
+                                   
+                                }
+                            }
+                        }
+                          
                     }
                 } else {
                     // If not the listener, we're just a regular client
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-
+                       
                     int sender_fd = pfds[i].fd;
 
                     if (nbytes <= 0) {
                         // Got error or connection closed by client
                         if (nbytes == 0) {
                             // Connection closed
-                            printf("pollserver: socket %d hung up\n", sender_fd);
+                            
                         } else {
                             perror("recv");
                         }
@@ -143,8 +164,8 @@ int main(void)
   
                         for(int j = 0; j < fd_count; j++) {
                             if (j == 0)
-                            {    
-                                printf("Received a message\n");
+                            {   
+                               
                             }
 
                             // Send to everyone!
@@ -152,10 +173,12 @@ int main(void)
 
                             // Except the listener and ourselves
                             if (dest_fd != listener && dest_fd != sender_fd) {
+                                
                                 if (send(dest_fd, buf, nbytes, 0) == -1) 
                                 {   
                                     printf("TEST, %s\n",buf);
                                     perror("send");
+                                   
                                 }
                             }
                         }

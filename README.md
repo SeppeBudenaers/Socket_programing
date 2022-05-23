@@ -7,7 +7,7 @@
  ### Welke onderdelen zijn behaald van de UDP Server ?
  
  - [X] Werkende Server applicatie die gegevens via UDP ontvangt (bewijs Packet Sender) [2/15]
- - [ ] CSV van ontvangen stream wordt aangemaakt [1/15]
+ - [x] CSV van ontvangen stream wordt aangemaakt [1/15]
  - [x] Het aantal pakketten dat ontvangen is wordt bijgehouden [1/15]
  - [x] Er is een aantal te ontvangen pakketten in te stellen [1/15]
  - [x] Het tijdsverschil tussen eerste en laatste pakket wordt getoond [1/15]
@@ -27,7 +27,7 @@
 - [x] Server accepteert verbinding en praat met verbonden client over TCP [1/25]
 - [x] Server applicatie stuurt ontvangen bericht door naar alle andere deelnemers [1/25]
 - [x] Server stuurt niet naar de afzender zijn eigen bericht [1/25]
-- [ ] Server stuurt de afzender informatie mee met het bericht (i.e. IP-adres + poort van zender) [2/25]
+- [x] Server stuurt de afzender informatie mee met het bericht (i.e. IP-adres + poort van zender) [2/25]
 - [ ] Server stuurt de laatste 16 chatberichten naar de client bij nieuwe verbinding [2/25]
 - [ ] Server kan HTTP communicatie uitvoeren met de webserver (bewijs via WireShark) [2/25]
 - [ ] *Server stuurt over HTTP de chatberichten door naar de webserver (bewijs via WireShark) [2/25]
