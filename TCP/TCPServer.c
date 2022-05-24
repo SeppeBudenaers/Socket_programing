@@ -146,7 +146,19 @@ int main(void)
                             }
                             if (dest_fd == newfd)
                             {
-                                for (int i = 15; i > -1 ; i--)
+                                for (int i = messagecounter; i < 16 ; i++)
+                                {
+                                    if (strlen(chatBuf[i]) != 0)
+                                    {
+                                        printf("Debug 2: message %d %s\n",i,chatBuf[i]);
+                                        if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
+                                    {
+                                        printf("TEST, %s\n",buf);
+                                        perror("send");
+                                    }
+                                    }
+                                }
+                                for (int i = 0; i < messagecounter; i++)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
                                     {
@@ -167,29 +179,11 @@ int main(void)
                 } else {
                     // If not the listener, we're just a regular client
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-                    // chat buffer
-                    switch (messagecounter)
-                    {
-                    case 15:
-                        printf("debug:before overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
-                        memset(chatBuf[messagecounter],0,strlen(chatBuf[messagecounter]));
+                    // chat buffer       
                         sprintf(chatBuf[messagecounter],"%s",buf);
                         chatBuf[messagecounter][nbytes] = '\0';
-                        printf("debug: after overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
-                        printf("------------------------");
-                        messagecounter = 0;
-                        break;            
-                    default:
-                        printf("debug:before overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
-                        memset(chatBuf[messagecounter],0,strlen(chatBuf[messagecounter]));
-                        sprintf(chatBuf[messagecounter],"%s",buf);
-                        chatBuf[messagecounter][nbytes] = '\0';
-                        printf("debug: after overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
-                        printf("------------------------");
-                        messagecounter++;
-                        
-                        break;
-                    }
+                        if (messagecounter == 15){messagecounter = 0;}
+                        else{messagecounter++;}
                     // 
                     int sender_fd = pfds[i].fd;
 
