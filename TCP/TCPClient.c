@@ -88,7 +88,7 @@ void recv_msg_handler() {
   while (1) {
 		int receive = recv(sockfd, message, LENGTH, 0);
     if (receive > 0) {
-      printf("%s", message);
+      printf("%s \n", message);
       str_overwrite_stdout();
     } else if (receive == 0) {
 			break;

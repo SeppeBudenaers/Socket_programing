@@ -120,7 +120,7 @@ int main(void)
                         add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
                         char clientinfo [100];
                         sprintf(clientinfo,"pollserver: new connection from %s on "
-                            "socket %d\n",
+                            "socket %d",
                             inet_ntop(remoteaddr.ss_family,
                                 get_in_addr((struct sockaddr*)&remoteaddr),
                                 remoteIP, INET6_ADDRSTRLEN),
@@ -150,7 +150,6 @@ int main(void)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
                                     {
-                                        printf("Debug 2: message %d %s\n",i,chatBuf[i]);
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
                                         printf("TEST, %s\n",buf);
@@ -162,7 +161,6 @@ int main(void)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
                                     {
-                                        printf("Debug 2: message %d %s\n",i,chatBuf[i]);
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
                                         printf("TEST, %s\n",buf);
