@@ -139,7 +139,7 @@ int main(void)
                             }
                             if (dest_fd == newfd)
                             {
-                                for (int i = 1; i < 17; i++)
+                                for (int i = 15; i > -1 ; i--)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
                                     {
@@ -162,11 +162,17 @@ int main(void)
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
                     for (int i = 15; i > -1 ; i--)
                     {
-                        if (i == 1) {strcpy(chatBuf[0],buf);}
+                         int x;
+                        if (i == 0) {strcpy(chatBuf[0],buf);}
                        
-                        int x  = strlen(chatBuf[i-1]);
-                        strcpy(chatBuf[i],chatBuf[i-1]); // zit een bug met niet heel de oude string te verwijderen kan mischien bereken waar de chatbuf[i-1] endiged en daarna een /0 zetten
-                        printf("Debug1: message %d %s\n",i,chatBuf[i]);
+                       else
+                       {
+                        x = strlen(chatBuf[i]);
+                        memset(chatBuf[i],33,strlen(chatBuf[i]));
+                        strcpy(chatBuf[i],chatBuf[i-1]); // zit een bug met niet heel de oude string te verwijderen kan mischien bereken waar de chatbuf[i-1] endiged en daarna een /0 zetten 
+                        }
+                        
+                        printf("Debug1: message %d %s en de lengte is %i\n",i,chatBuf[i],x);
                     }
                     chatBuf[0][0] = '\0';
                     int sender_fd = pfds[i].fd;
