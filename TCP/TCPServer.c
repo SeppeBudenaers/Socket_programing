@@ -50,6 +50,12 @@ void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_count, int *fd_size);
 // Remove an index from the set
 void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 
+//trim functie
+void trim (char *s);
+int a;
+int b;
+int c;
+int d;
 // Main
 int main(void)
 {
@@ -62,6 +68,7 @@ int main(void)
 
     char buf[1000];    // Buffer for client data
     char chatBuf[16][1000] = {"\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0"} ;
+    int messagecounter = 0;
     char remoteIP[INET6_ADDRSTRLEN];
 
     // Start off with room for 5 connections
@@ -160,21 +167,30 @@ int main(void)
                 } else {
                     // If not the listener, we're just a regular client
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-                    for (int i = 15; i > -1 ; i--)
+                    // chat buffer
+                    switch (messagecounter)
                     {
-                         int x;
-                        if (i == 0) {strcpy(chatBuf[0],buf);}
-                       
-                       else
-                       {
-                        x = strlen(chatBuf[i]);
-                        memset(chatBuf[i],33,strlen(chatBuf[i]));
-                        strcpy(chatBuf[i],chatBuf[i-1]); // zit een bug met niet heel de oude string te verwijderen kan mischien bereken waar de chatbuf[i-1] endiged en daarna een /0 zetten 
-                        }
+                    case 15:
+                        printf("debug:before overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
+                        memset(chatBuf[messagecounter],0,strlen(chatBuf[messagecounter]));
+                        sprintf(chatBuf[messagecounter],"%s",buf);
+                        chatBuf[messagecounter][nbytes] = '\0';
+                        printf("debug: after overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
+                        printf("------------------------");
+                        messagecounter = 0;
+                        break;            
+                    default:
+                        printf("debug:before overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
+                        memset(chatBuf[messagecounter],0,strlen(chatBuf[messagecounter]));
+                        sprintf(chatBuf[messagecounter],"%s",buf);
+                        chatBuf[messagecounter][nbytes] = '\0';
+                        printf("debug: after overwriting \n chatbuf :%s\n buf :%s\n",chatBuf[messagecounter],buf);
+                        printf("------------------------");
+                        messagecounter++;
                         
-                        printf("Debug1: message %d %s en de lengte is %i\n",i,chatBuf[i],x);
+                        break;
                     }
-                    chatBuf[0][0] = '\0';
+                    // 
                     int sender_fd = pfds[i].fd;
 
                     if (nbytes <= 0) {
@@ -307,4 +323,14 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
     pfds[i] = pfds[*fd_count-1];
 
     (*fd_count)--;
+}
+void trim(char *s)
+{
+    int i = strlen(s) -1;
+    while (i > 0)
+    {
+        if (s[i] == ' ' || s[i] == '\n' || s[i] == '\t' || s[i] == '0' ) i--;
+        else break;
+    }
+    s[i+1] = '\0';
 }
