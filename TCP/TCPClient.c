@@ -138,7 +138,9 @@ int main(int argc, char **argv){
 	}
 
 	// Send name
-	send(sockfd, name, 32, 0);
+	char joinmessage[100];
+	sprintf(joinmessage,"%s has joined the chat :P",name);
+	send(sockfd, joinmessage, strlen(joinmessage), 0);
 
 	printf("=== WELCOME TO THE CHATROOM ===\n");
 
