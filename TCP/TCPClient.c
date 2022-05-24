@@ -42,7 +42,7 @@
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 char name[32];
-
+//char chatberichten [16][1000];
 void str_overwrite_stdout() {
   printf("%s", "> ");
   fflush(stdout);

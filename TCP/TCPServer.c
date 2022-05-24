@@ -61,7 +61,7 @@ int main(void)
     socklen_t addrlen;
 
     char buf[1000];    // Buffer for client data
-
+    char chatBuf[16][1000] = {"\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0"} ;
     char remoteIP[INET6_ADDRSTRLEN];
 
     // Start off with room for 5 connections
@@ -137,13 +137,38 @@ int main(void)
                                    
                                 }
                             }
+                            if (dest_fd == newfd)
+                            {
+                                for (int i = 1; i < 17; i++)
+                                {
+                                    if (strlen(chatBuf[i]) != 0)
+                                    {
+                                        printf("Debug 2: message %d %s\n",i,chatBuf[i]);
+                                        if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
+                                    {
+                                        printf("TEST, %s\n",buf);
+                                        perror("send");
+                                    }
+                                    }
+                                }
+
+                            }
+                            
                         }
                           
                     }
                 } else {
                     // If not the listener, we're just a regular client
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
+                    for (int i = 15; i > -1 ; i--)
+                    {
+                        if (i == 1) {strcpy(chatBuf[0],buf);}
                        
+                        int x  = strlen(chatBuf[i-1]);
+                        strcpy(chatBuf[i],chatBuf[i-1]); // zit een bug met niet heel de oude string te verwijderen kan mischien bereken waar de chatbuf[i-1] endiged en daarna een /0 zetten
+                        printf("Debug1: message %d %s\n",i,chatBuf[i]);
+                    }
+                    chatBuf[0][0] = '\0';
                     int sender_fd = pfds[i].fd;
 
                     if (nbytes <= 0) {
