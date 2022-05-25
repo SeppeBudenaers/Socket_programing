@@ -155,7 +155,7 @@ int main(void)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
                                     {   
-                                        
+                                        printf("debug : %s\n",chatBuf[i]);
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
                                         printf("TEST, %s\n",chatBuf[i]);
@@ -167,7 +167,7 @@ int main(void)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
                                     {
-                                        
+                                        printf("debug : %s\n",chatBuf[i]);
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
                                         printf("TEST, %s\n",chatBuf[i]);
@@ -184,6 +184,10 @@ int main(void)
                 } else {
                     // If not the listener, we're just a regular client
                     nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
+                    sprintf(chatBuf[messagecounter],"%s",buf);
+                    chatBuf[messagecounter][nbytes] = '\0';
+                    if (messagecounter == 15){messagecounter = 0;}
+                    else{messagecounter++;}
                     Http(1);
                     // 
                     int sender_fd = pfds[i].fd;
