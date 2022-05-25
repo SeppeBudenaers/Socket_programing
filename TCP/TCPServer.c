@@ -219,7 +219,13 @@ int main(void)
 
                             // Except the listener and ourselves
                             if (dest_fd != listener && dest_fd != sender_fd) {
+                                int counter = 0;
+                                while (counter < strlen(buf))
+                                {
+                                    if (buf[counter] == '_'){buf[counter] = ' ';}
                                 
+                                    counter++;
+                                }
                                 if (send(dest_fd, buf, nbytes, 0) == -1) 
                                 {   
                                     printf("TEST, %s\n",buf);
