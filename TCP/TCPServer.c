@@ -49,28 +49,38 @@ void add_to_pfds(struct pollfd *pfds[], int newfd, int *fd_count, int *fd_size);
 
 // Remove an index from the set
 void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
+// buffers
+char buf[1000];    // Buffer for client data
+char chatBuf[16][1000] = {"\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0"} ;
 
-//trim functie
-void trim (char *s);
-int a;
-int b;
-int c;
-int d;
+int messagecounter = 0;
+
+// http int
+// send functie
+int initializationsend();
+void executionsend( int );
+void cleanupsend( int );
+void Httpsend();
+
+//recive funtion
+int initializationHttpRec();
+void executionHttpRec( int );
+void cleanupHttpRec( int );
+void HttpRec();   
+
 // Main
 int main(void)
 {
 	OSInit();
     int listener;     // Listening socket descriptor
-
+    int nbytes;
     int newfd;        // Newly accept()ed socket descriptor
     struct sockaddr_storage remoteaddr; // Client address
     socklen_t addrlen;
 
-    char buf[1000];    // Buffer for client data
-    char chatBuf[16][1000] = {"\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0"} ;
-    int messagecounter = 0;
+    
+    
     char remoteIP[INET6_ADDRSTRLEN];
-
     // Start off with room for 5 connections
     // (We'll realloc as necessary)
     int fd_count = 0;
@@ -120,7 +130,7 @@ int main(void)
                         add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
                         char clientinfo [100];
                         sprintf(clientinfo,"pollserver: new connection from %s on "
-                            "socket %d",
+                            "socket %d\n",
                             inet_ntop(remoteaddr.ss_family,
                                 get_in_addr((struct sockaddr*)&remoteaddr),
                                 remoteIP, INET6_ADDRSTRLEN),
@@ -152,7 +162,7 @@ int main(void)
                                     {
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
-                                        printf("TEST, %s\n",buf);
+                                        printf("TEST, %s\n",chatBuf[i]);
                                         perror("send");
                                     }
                                     }
@@ -163,7 +173,7 @@ int main(void)
                                     {
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
-                                        printf("TEST, %s\n",buf);
+                                        printf("TEST, %s\n",chatBuf[i]);
                                         perror("send");
                                     }
                                     }
@@ -172,16 +182,18 @@ int main(void)
                             }
                             
                         }
-                          
+                    
                     }
                 } else {
                     // If not the listener, we're just a regular client
-                    int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
+                    nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
                     // chat buffer       
                         sprintf(chatBuf[messagecounter],"%s",buf);
                         chatBuf[messagecounter][nbytes] = '\0';
                         if (messagecounter == 15){messagecounter = 0;}
                         else{messagecounter++;}
+                    
+                        Httpsend();
                     // 
                     int sender_fd = pfds[i].fd;
 
@@ -316,13 +328,125 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
 
     (*fd_count)--;
 }
-void trim(char *s)
+//http shit
+int initializationsend()
 {
-    int i = strlen(s) -1;
-    while (i > 0)
-    {
-        if (s[i] == ' ' || s[i] == '\n' || s[i] == '\t' || s[i] == '0' ) i--;
-        else break;
+	struct addrinfo internet_address_setup;
+	struct addrinfo * internet_address_result;
+	memset( &internet_address_setup, 0, sizeof internet_address_setup );
+	internet_address_setup.ai_family = AF_UNSPEC;
+	internet_address_setup.ai_socktype = SOCK_STREAM;
+	int getaddrinfo_return = getaddrinfo( "student.pxl-ea-ict.be", "80", &internet_address_setup, &internet_address_result );
+	if( getaddrinfo_return != 0 )
+	{
+		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror( getaddrinfo_return ) );
+		exit( 1 );
+	}
+
+	int internet_socket = -1;
+	struct addrinfo * internet_address_result_iterator = internet_address_result;
+	while( internet_address_result_iterator != NULL )
+	{
+		internet_socket = socket( internet_address_result_iterator->ai_family, internet_address_result_iterator->ai_socktype, internet_address_result_iterator->ai_protocol );
+		if( internet_socket == -1 )
+		{
+			perror( "socket" );
+		}
+		else
+		{
+			int connect_return = connect( internet_socket, internet_address_result_iterator->ai_addr, internet_address_result_iterator->ai_addrlen );
+			if( connect_return == -1 )
+			{
+				perror( "connect" );
+				close( internet_socket );
+			}
+			else
+			{
+				break;
+			}
+		}
+		internet_address_result_iterator = internet_address_result_iterator->ai_next;
+	}
+
+	freeaddrinfo( internet_address_result );
+
+	if( internet_socket == -1 )
+	{
+		fprintf( stderr, "socket: no valid socket address found\n" );
+		exit( 2 );
+	}
+
+	return internet_socket;
+}
+
+void executionsend( int internet_socket )
+{	
+    for (int i = messagecounter; i < 16 ; i++)
+    {   
+        if (strlen(chatBuf[i]) != 0) 
+        { 
+            char historymessage[2000] ="GET /chat.php?i=12345679&msg=";
+            int counter = 0;
+            while (counter < strlen(chatBuf[i]))
+            {
+                if (chatBuf[i][counter] == ' ')
+                {chatBuf[i][counter] = '_';}  
+                counter++;
+            }
+            chatBuf[i][strlen(chatBuf[i]) + 1] = '\0';
+            sprintf(historymessage,"%s%s",historymessage,chatBuf[i]);
+            sprintf(historymessage,"%s HTTP/1.0\r\nHost: student.pxl-ea-ict.be\r\n\r\n",historymessage);
+            printf("debug : %s \nsize : %i \n",historymessage,strlen(historymessage));   
+            if (send(internet_socket,historymessage,strlen(historymessage),0) == -1)
+            {
+                printf("TEST, %s\n",historymessage);
+                perror("send");
+            } 
+        }
     }
-    s[i+1] = '\0';
+    for (int i = 0; i < messagecounter; i++)
+    {
+        if (strlen(chatBuf[i]) != 0) 
+        { 
+            char historymessage[2000] ="GET /chat.php?i=12345679&msg=";
+            int counter = 0;
+            while (counter < strlen(chatBuf[i]))
+            {
+                if (chatBuf[i][counter] == ' '){chatBuf[i][counter] = '_';}  
+                if (chatBuf[i][counter] == '\n' || chatBuf[i][counter] == '\r'||chatBuf[i][counter] == '\t'){chatBuf[i][counter] = '\0'; break;}
+                
+                counter++;
+            }
+            
+            sprintf(historymessage,"%s%s",historymessage,chatBuf[i]);
+            sprintf(historymessage,"%s HTTP/1.0\r\nHost: student.pxl-ea-ict.be\r\n\r\n",historymessage);
+            printf("debug : %s \nsize : %i \n",historymessage,strlen(historymessage));   
+            if (send(internet_socket,historymessage,strlen(historymessage),0) == -1)
+            {
+                printf("TEST, %s\n",historymessage);
+                perror("send");
+            } 
+        }
+    }
+}
+
+void cleanupsend( int internet_socket )
+{
+	//Step 3.2
+	int shutdown_return = shutdown( internet_socket, SD_SEND );
+	if( shutdown_return == -1 )
+	{
+		perror( "shutdown" );
+	}
+
+	//Step 3.1
+	close( internet_socket );
+}
+
+void Httpsend()
+{
+    printf("in the http loop\n");
+	int internet_socket = initializationsend();
+	executionsend( internet_socket );
+	cleanupsend( internet_socket );
 }
