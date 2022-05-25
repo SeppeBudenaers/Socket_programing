@@ -52,7 +52,7 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);
 // buffers
 char buf[1000];    // Buffer for client data
 char chatBuf[16][1000] = {"\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0","\0"} ;
-
+int nbytes;
 int messagecounter = 0;
 
 // http int
@@ -73,7 +73,7 @@ int main(void)
 {
 	OSInit();
     int listener;     // Listening socket descriptor
-    int nbytes;
+    
     int newfd;        // Newly accept()ed socket descriptor
     struct sockaddr_storage remoteaddr; // Client address
     socklen_t addrlen;
@@ -187,13 +187,7 @@ int main(void)
                 } else {
                     // If not the listener, we're just a regular client
                     nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-                    // chat buffer       
-                        sprintf(chatBuf[messagecounter],"%s",buf);
-                        chatBuf[messagecounter][nbytes] = '\0';
-                        if (messagecounter == 15){messagecounter = 0;}
-                        else{messagecounter++;}
-                    
-                        Httpsend();
+                    Httpsend();
                     // 
                     int sender_fd = pfds[i].fd;
 
@@ -381,53 +375,27 @@ int initializationsend()
 
 void executionsend( int internet_socket )
 {	
-    for (int i = messagecounter; i < 16 ; i++)
-    {   
-        if (strlen(chatBuf[i]) != 0) 
-        { 
-            char historymessage[2000] ="GET /chat.php?i=12345679&msg=";
-            int counter = 0;
-            while (counter < strlen(chatBuf[i]))
-            {
-                if (chatBuf[i][counter] == ' ')
-                {chatBuf[i][counter] = '_';}  
-                counter++;
-            }
-            chatBuf[i][strlen(chatBuf[i]) + 1] = '\0';
-            sprintf(historymessage,"%s%s",historymessage,chatBuf[i]);
-            sprintf(historymessage,"%s HTTP/1.0\r\nHost: student.pxl-ea-ict.be\r\n\r\n",historymessage);
-            printf("debug : %s \nsize : %i \n",historymessage,strlen(historymessage));   
-            if (send(internet_socket,historymessage,strlen(historymessage),0) == -1)
-            {
-                printf("TEST, %s\n",historymessage);
-                perror("send");
-            } 
-        }
-    }
-    for (int i = 0; i < messagecounter; i++)
+    buf[nbytes] = '\0';
+    char historymessage[2000] ="GET /chat.php?i=12345679&msg=";     
+    int counter = 0;
+    while (counter < strlen(buf))
     {
-        if (strlen(chatBuf[i]) != 0) 
-        { 
-            char historymessage[2000] ="GET /chat.php?i=12345679&msg=";
-            int counter = 0;
-            while (counter < strlen(chatBuf[i]))
+        if (buf[counter] == ' '){buf[counter] = '_';}
+        else if (!(buf[counter] >= '!' && buf[counter] <= '~') )
             {
-                if (chatBuf[i][counter] == ' '){chatBuf[i][counter] = '_';}  
-                if (chatBuf[i][counter] == '\n' || chatBuf[i][counter] == '\r'||chatBuf[i][counter] == '\t'){chatBuf[i][counter] = '\0'; break;}
-                
-                counter++;
+                printf("niet leesbaar character : %c",buf[counter]);
+                buf[counter] = '\0';
             }
-            
-            sprintf(historymessage,"%s%s",historymessage,chatBuf[i]);
-            sprintf(historymessage,"%s HTTP/1.0\r\nHost: student.pxl-ea-ict.be\r\n\r\n",historymessage);
-            printf("debug : %s \nsize : %i \n",historymessage,strlen(historymessage));   
-            if (send(internet_socket,historymessage,strlen(historymessage),0) == -1)
-            {
-                printf("TEST, %s\n",historymessage);
-                perror("send");
-            } 
-        }
+        counter++;
     }
+    sprintf(historymessage,"%s%s",historymessage,buf);
+    sprintf(historymessage,"%s HTTP/1.0\r\nHost: student.pxl-ea-ict.be\r\n\r\n",historymessage);
+    printf("debug : %s \nsize : %i \n",historymessage,strlen(historymessage));  
+    if (send(internet_socket,historymessage,strlen(historymessage),0) == -1)
+    {
+        printf("TEST, %s\n",historymessage);
+        perror("send");
+    } 
 }
 
 void cleanupsend( int internet_socket )
