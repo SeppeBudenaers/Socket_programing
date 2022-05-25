@@ -56,17 +56,11 @@ int nbytes;
 int messagecounter = 0;
 
 // http int
-// send functie
-int initializationsend();
-void executionsend( int );
-void cleanupsend( int );
-void Httpsend();
-
-//recive funtion
-int initializationHttpRec();
-void executionHttpRec( int );
-void cleanupHttpRec( int );
-void HttpRec();   
+int initializationhttp();
+void executiohttpsend( int );
+void cleanuphttp( int );
+void Http(int);
+void executionhttpRec( int );
 
 // Main
 int main(void)
@@ -78,7 +72,7 @@ int main(void)
     struct sockaddr_storage remoteaddr; // Client address
     socklen_t addrlen;
 
-    
+    Http(2);
     
     char remoteIP[INET6_ADDRSTRLEN];
     // Start off with room for 5 connections
@@ -155,11 +149,13 @@ int main(void)
                                 }
                             }
                             if (dest_fd == newfd)
-                            {
+                            // hier shit doen
+                            { 
                                 for (int i = messagecounter; i < 16 ; i++)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
-                                    {
+                                    {   
+                                        
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
                                         printf("TEST, %s\n",chatBuf[i]);
@@ -171,6 +167,7 @@ int main(void)
                                 {
                                     if (strlen(chatBuf[i]) != 0)
                                     {
+                                        
                                         if (send(newfd,chatBuf[i],sizeof(chatBuf[i]),0) == -1)
                                     {
                                         printf("TEST, %s\n",chatBuf[i]);
@@ -187,7 +184,7 @@ int main(void)
                 } else {
                     // If not the listener, we're just a regular client
                     nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-                    Httpsend();
+                    Http(1);
                     // 
                     int sender_fd = pfds[i].fd;
 
@@ -323,7 +320,8 @@ void del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
     (*fd_count)--;
 }
 //http shit
-int initializationsend()
+//http send
+int initializationhttp()
 {
 	struct addrinfo internet_address_setup;
 	struct addrinfo * internet_address_result;
@@ -373,7 +371,7 @@ int initializationsend()
 	return internet_socket;
 }
 
-void executionsend( int internet_socket )
+void executiohttpsend( int internet_socket )
 {	
     buf[nbytes] = '\0';
     char historymessage[2000] ="GET /chat.php?i=12345679&msg=";     
@@ -397,8 +395,52 @@ void executionsend( int internet_socket )
         perror("send");
     } 
 }
+void executionHttpRec( int internet_socket )
+{	
+	//Step 2.1
+	int number_of_bytes_send = 0;
+	number_of_bytes_send = send( internet_socket, "GET /history.php?i=12345679 HTTP/1.0\r\nHost: student.pxl-ea-ict.be\r\n\r\n", 77, 0 );
+	if( number_of_bytes_send == -1 )
+	{
+		perror( "send" );
+	}
 
-void cleanupsend( int internet_socket )
+	int number_of_bytes_received = 0;
+	char buffer[20000];
+
+	number_of_bytes_received = recv( internet_socket, buffer, ( sizeof buffer ) - 1, 0 );
+	if( number_of_bytes_received == -1 )
+	{
+		perror( "recv" );
+	}
+	else
+	{	
+		buffer[number_of_bytes_received] = '\0';
+		printf("debug : %s",buffer);
+        int i = 15;
+        int x = 0;
+        int counter = 183;
+        while (buffer[counter] != '\0')
+        {
+            if (!(buffer[counter] >= '!' && buffer[counter] <= '~')){chatBuf[i][x] = '\0';counter++;x = 0;i--;}
+            else {chatBuf[i][x]= buffer[counter];counter++;x++;}
+        }
+
+        for (int i = 0; i < 16; i++)
+        {
+            counter = 0;
+            while (chatBuf[i][counter] != '\0')
+            {
+                if (chatBuf[i][counter] == '_'){chatBuf[i][counter] = ' ';}
+
+                counter++;
+            }
+        }    
+	}
+    
+}
+
+void cleanuphttp( int internet_socket )
 {
 	//Step 3.2
 	int shutdown_return = shutdown( internet_socket, SD_SEND );
@@ -411,10 +453,13 @@ void cleanupsend( int internet_socket )
 	close( internet_socket );
 }
 
-void Httpsend()
-{
+void Http(int recive)
+{ 
+
     printf("in the http loop\n");
-	int internet_socket = initializationsend();
-	executionsend( internet_socket );
-	cleanupsend( internet_socket );
+	int internet_socket = initializationhttp();
+	if(recive == 1){executiohttpsend( internet_socket );}
+    else if (recive == 2){executionHttpRec( internet_socket );}
+
+	cleanuphttp( internet_socket );
 }
