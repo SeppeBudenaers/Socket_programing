@@ -40,12 +40,26 @@ int OSCleanup(void) {}
 int initialization();
 void execution(int internet_socket);
 void cleanup(int internet_socket);
-
+int package_expected = 0;
 int package_arive = 0;
 int timeout = 0;
 clock_t timer;
 int timeouts = 10;
 FILE *fptr;
+FILE *OUTPUTFILESTATS;
+double rommel[5] = {0,0,0,0,0,0};
+double stats1[2] = {0,0,0};
+double stats2[2] = {0,0,0};
+double stats3[2] = {0,0,0};
+double maxstat1[2] = {-__DBL_MAX__,-__DBL_MAX__,-__DBL_MAX__};
+double maxstat2[2] = {-__DBL_MAX__,-__DBL_MAX__,-__DBL_MAX__};
+double maxstat3[2] = {-__DBL_MAX__,-__DBL_MAX__,-__DBL_MAX__};
+double minstat1[2] = {__DBL_MAX__,__DBL_MAX__,__DBL_MAX__};
+double minstat2[2] = {__DBL_MAX__,__DBL_MAX__,__DBL_MAX__};
+double minstat3[2] = {__DBL_MAX__,__DBL_MAX__,__DBL_MAX__};
+double statsavg1 [2] = {0,0,0};
+double statsavg2 [2] = {0,0,0};
+double statsavg3 [2] = {0,0,0};
 
 
 int main(int argc, char *argv[])
@@ -61,7 +75,7 @@ int main(int argc, char *argv[])
 	/////////////
 	// Execution//
 	/////////////
-	int package_expected = 0;
+	
 	printf("hoeveel pakketten worden er verwacht : ");
 	scanf("%i",&package_expected);
 	printf("hoeveel seconden voor een time out : ");
@@ -74,7 +88,55 @@ int main(int argc, char *argv[])
 	timer = clock() - timer;
 	double time_taken = ((double)timer)/CLOCKS_PER_SEC;
 	printf("stats : \n expected packages : %i \n packages arrived : %i \n packages dropped: %i \n time taken : %lf seconds", package_expected, package_arive,package_expected - package_arive, time_taken);
+	fprintf(OUTPUTFILESTATS,"The max values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",maxstat1[i]);
+		}
+		fprintf(OUTPUTFILESTATS,"\nThe min values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",minstat1[i]);
+		}
+		fprintf(OUTPUTFILESTATS,"\nThe average values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",statsavg1[i]);
+		}
 
+		fprintf(OUTPUTFILESTATS,"\n\nBellow you find the parsed values for stats2:\n");
+		fprintf(OUTPUTFILESTATS,"The max values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",maxstat2[i]);
+		}
+		fprintf(OUTPUTFILESTATS,"\nThe min values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",minstat2[i]);
+		}
+		fprintf(OUTPUTFILESTATS,"\nThe average values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",statsavg2[i]);
+		}
+		
+		fprintf(OUTPUTFILESTATS,"\n\nBellow you find the parsed values for stats3:\n");
+		fprintf(OUTPUTFILESTATS,"The max values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",maxstat3[i]);
+		}
+		fprintf(OUTPUTFILESTATS,"\nThe min values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",minstat3[i]);
+		}
+		fprintf(OUTPUTFILESTATS,"\nThe average values:\n");
+		for (int i = 0; i < 3; i++)		
+		{
+			fprintf(OUTPUTFILESTATS,"%lf, ",statsavg3[i]);
+		}
 	////////////
 	// Clean up//
 	////////////
@@ -88,6 +150,8 @@ int main(int argc, char *argv[])
 
 int initialization()
 {
+	fptr = fopen("Datastream.csv", "a");
+    OUTPUTFILESTATS = fopen("data.csv", "a");
 	// Step 1.1
 	struct addrinfo internet_address_setup;
 	struct addrinfo *internet_address_result;
@@ -160,6 +224,9 @@ void execution(int internet_socket)
 	}
 	else
 	{
+		
+		
+
 		buffer[number_of_bytes_received] = '\0';
 		printf("Received : %s\n", buffer);
 		if (package_arive == 0)
@@ -167,16 +234,69 @@ void execution(int internet_socket)
 			timer = clock();
 		}
 		package_arive++;
-		fptr = fopen("Data.csv", "a");
+		
     if (fptr == NULL)
     {
         printf("Cannot open file \n");
         exit(0);
     }
-	//fwrite(buffer,number_of_bytes_received,1,fptr);
+	sscanf(buffer,"%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",&rommel,&rommel,&stats1[0],&stats1[1],&stats1[2],&rommel,&stats2[0],&stats2[1],&stats2[2],&rommel,&stats3[0],&stats3[1],&stats3[2]);
+	//Gets the max for stats1-3.
+				for (size_t i = 0; i < 3; i++)
+				{
+					if (stats1[i] > maxstat1[i])
+					{
+						maxstat1[i] = stats1[i];
+					}
+
+					if (stats2[i] > maxstat2[i])
+					{
+						maxstat2[i] = stats2[i];
+					}
+
+					if (stats3[i] > maxstat3[i])
+					{
+						maxstat3[i] = stats3[i];
+					}
+
+				}
+
+				//Gets the min for stats1-3.
+				for (size_t i = 0; i < 3; i++)
+				{
+					if (stats1[i] < minstat1[i])
+					{
+						minstat1[i] = stats1[i];
+					}
+
+					if (stats2[i] < minstat2[i])
+					{
+						minstat2[i] = stats2[i];
+					}
+					
+					if (stats3[i] < minstat3[i])
+					{
+						minstat3[i] = stats3[i];
+					}
+		
+				}
+				for (size_t i = 0; i < 3; i++)
+				{
+					statsavg1[i] = statsavg1[i] + stats1[i];
+					statsavg2[i] = statsavg2[i] + stats2[i];
+					statsavg3[i] = statsavg3[i] + stats3[i];
+				}
+				for (size_t i = 0; i < 3; i++)
+		{
+			statsavg1[i] = statsavg1[i] / (package_expected -package_arive);
+			statsavg2[i] = statsavg1[i] / (package_expected -package_arive);
+			statsavg3[i] = statsavg1[i] / (package_expected -package_arive);
+		}
+			}
 	fprintf(fptr,"%s\n",buffer);
-	}
+
 }
+
 
 void cleanup(int internet_socket)
 {

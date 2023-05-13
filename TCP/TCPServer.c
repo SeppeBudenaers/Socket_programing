@@ -149,7 +149,6 @@ int main(void)
                                 }
                             }
                             if (dest_fd == newfd)
-                            // hier shit doen
                             { 
                                 for (int i = messagecounter; i < 16 ; i++)
                                 {
@@ -232,6 +231,7 @@ int main(void)
                                     perror("send");
                                    
                                 }
+                                
                             }
                         }
                     }
@@ -408,6 +408,7 @@ void executiohttpsend( int internet_socket )
 void executionHttpRec( int internet_socket )
 {	
 	//Step 2.1
+    printf("http rec\n");
 	int number_of_bytes_send = 0;
 	number_of_bytes_send = send( internet_socket, "GET /history.php?i=12345679 HTTP/1.0\r\nHost: student.pxl-ea-ict.be\r\n\r\n", 77, 0 );
 	if( number_of_bytes_send == -1 )
@@ -419,6 +420,7 @@ void executionHttpRec( int internet_socket )
 	char buffer[20000];
 
 	number_of_bytes_received = recv( internet_socket, buffer, ( sizeof buffer ) - 1, 0 );
+    number_of_bytes_received = recv( internet_socket, buffer, ( sizeof buffer ) - 1, 0 );
 	if( number_of_bytes_received == -1 )
 	{
 		perror( "recv" );
@@ -426,10 +428,10 @@ void executionHttpRec( int internet_socket )
 	else
 	{	
 		buffer[number_of_bytes_received] = '\0';
-		printf("debug : %s",buffer);
+		printf("debug : bytes rec :%i\n %s",number_of_bytes_received,buffer);
         int i = 15;
         int x = 0;
-        int counter = 183;
+        int counter = 0;
         while (buffer[counter] != '\0')
         {
             if (!(buffer[counter] >= '!' && buffer[counter] <= '~')){chatBuf[i][x] = '\0';counter++;x = 0;i--;}
